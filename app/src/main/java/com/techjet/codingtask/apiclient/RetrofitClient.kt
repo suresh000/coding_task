@@ -1,10 +1,12 @@
 package com.techjet.codingtask.apiclient
 
 import com.google.gson.GsonBuilder
+import com.techjet.codingtask.AppController
 import com.techjet.codingtask.BuildConfig
+import com.techjet.codingtask.utils.NetworkUtil
+import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -55,19 +57,28 @@ object RetrofitClient {
         httpClient.readTimeout(60, TimeUnit.SECONDS)
         httpClient.writeTimeout(60, TimeUnit.SECONDS)
 
+        val cacheSize = (10 * 1024 * 1024).toLong()
+        val myCache = Cache(AppController.instance.cacheDir, cacheSize)
+        httpClient.cache(myCache)
+
         httpClient.addInterceptor(Interceptor { chain: Interceptor.Chain ->
-            val original = chain.request()
-            val requestBuilder: Request.Builder = original.newBuilder()
+            var original = chain.request()
 
-            requestBuilder.header("Accept", "application/json")
-            requestBuilder.header("Content-Type", "application/x-www-form-urlencoded")
+            original = if (NetworkUtil.isConnected(AppController.instance)) {
+                original.newBuilder()
+                    .header("Cache-Control", "public, max-age=" + 5)
+                    .header("Accept", "application/json")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .build()
+            } else {
+                original.newBuilder()
+                    .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7)
+                    .header("Accept", "application/json")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .build()
+            }
 
-            val originalHttpUrl = chain.request().url
-            val url = originalHttpUrl.newBuilder().build()
-            requestBuilder.url(url)
-
-            val request: Request = requestBuilder.build()
-            chain.proceed(request)
+            chain.proceed(original)
         })
 
         return httpClient

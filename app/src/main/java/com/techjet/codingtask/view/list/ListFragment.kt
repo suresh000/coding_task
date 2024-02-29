@@ -35,7 +35,7 @@ class ListFragment : BaseFragment() {
             layoutManager = gridLayoutManager
         }
 
-        val repository = ListRepository()
+        val repository = ListRepository(requireContext())
         val factory = ListViewModelFactory(repository)
         mVm = ViewModelProvider(this, factory)[ListViewModel::class.java]
         mBinding.vm = mVm

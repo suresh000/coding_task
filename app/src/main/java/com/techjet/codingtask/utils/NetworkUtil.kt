@@ -32,5 +32,6 @@ class NetworkUtil private constructor() {
             }
             return false
         }
+
     }
 }

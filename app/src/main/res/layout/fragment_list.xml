@@ -5,6 +5,8 @@
 
     <data>
 
+        <import type="android.view.View" />
+
         <variable
             name="vm"
             type="com.techjet.codingtask.view.list.ListViewModel" />
@@ -28,6 +30,14 @@
             android:paddingEnd="@dimen/dp_6"
             android:paddingBottom="@dimen/dp_20"
             app:setAdapter='@{repository.mAdapter}' />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:visibility="@{repository.isLoading ? View.VISIBLE : View.GONE}"
+            app:indicatorColor="?colorPrimary" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
