@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.TextUtils
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
+import com.techjet.codingtask.AppExecutorService
 import com.techjet.codingtask.apiclient.ApiError
 import com.techjet.codingtask.apiclient.RetrofitClient
 import com.techjet.codingtask.apiclient.list.ListApi
@@ -12,6 +13,8 @@ import com.techjet.codingtask.model.list.Item
 import com.techjet.codingtask.model.list.ListResponse
 import com.techjet.codingtask.room.AppRoomDatabase
 import com.techjet.codingtask.room.entity.ListItem
+import com.techjet.codingtask.utils.DownloadImage
+import com.techjet.codingtask.utils.FileUtils
 import com.techjet.codingtask.utils.NetworkUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,14 +36,12 @@ class ListRepository(private val mContext: Context) {
             Thread {
                 val list: MutableList<ListItem> =
                     AppRoomDatabase.getInstance(mContext).listItemDao().getList()
-                if (list.isNotEmpty()) {
-                    loadOffline(list)
-                }
+                loadOffline(list)
             }.start()
         }
     }
 
-    fun fetchList(tags: String, callback: Int) {
+    private fun fetchList(tags: String, callback: Int) {
         val api = ListApi(tags, callback)
         api.call(object : RetrofitClient.Listener<ListResponse, ApiError> {
 
@@ -53,7 +54,7 @@ class ListRepository(private val mContext: Context) {
                     val list = ArrayList<ViewModelItem>()
                     val sList = ArrayList<ListItem>()
                     for (item in items) {
-                        list.add(ListItemViewModel(item))
+                        list.add(ListItemViewModel(mContext, item))
 
                         sList.add(ListItem().apply {
                             title = item.title ?: ""
@@ -62,9 +63,7 @@ class ListRepository(private val mContext: Context) {
                         })
                     }
 
-                    Thread(Runnable {
-                        AppRoomDatabase.getInstance(mContext).listItemDao().insertAll(sList)
-                    }).start()
+                    AppExecutorService.SERVICE.submit(StoreLocal(sList))
 
                     isLoading.set(false)
 
@@ -84,10 +83,11 @@ class ListRepository(private val mContext: Context) {
     private fun loadOffline(list: MutableList<ListItem>) {
         val viewModels = ArrayList<ViewModelItem>()
         for (item in list) {
-            viewModels.add(ListItemViewModel(Item().apply {
+            viewModels.add(ListItemViewModel(mContext, Item().apply {
                 title = item.title ?: ""
                 media?.m = item.link ?: ""
                 link = item.link ?: ""
+                localImagePath = item.localImagePath ?: ""
             }))
         }
 
@@ -96,6 +96,26 @@ class ListRepository(private val mContext: Context) {
         CoroutineScope(Dispatchers.Main).launch {
             mAdapter.get()?.addItems(viewModels)
         }
+    }
+
+    private inner class StoreLocal(private val mList: ArrayList<ListItem>) : Runnable {
+
+        override fun run() {
+            for (item in mList) {
+                val path = FileUtils.getAppCacheDir(mContext) + item.title + ".jpg"
+                item.localImagePath = path
+                if (NetworkUtil.isConnected(mContext)) {
+                    if (!FileUtils.isExit(path)) {
+                        AppExecutorService.SERVICE.submit {
+                            DownloadImage.download(item.link, path)
+                        }
+                    }
+                }
+            }
+
+            AppRoomDatabase.getInstance(mContext).listItemDao().insertAll(mList)
+        }
+
     }
 
     private class ItemComparator : Comparator<Item> {

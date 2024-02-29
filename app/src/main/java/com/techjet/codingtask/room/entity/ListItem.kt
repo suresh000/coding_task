@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "listitem",
-    indices = [Index(value = ["title", "image", "link"], unique = true)]
+    indices = [Index(value = ["title", "image", "link", "localImagePath"], unique = true)]
 )
 class ListItem {
 
@@ -23,4 +23,7 @@ class ListItem {
 
     @ColumnInfo(name = "link")
     var link: String = ""
+
+    @ColumnInfo(name = "localImagePath")
+    var localImagePath: String = ""
 }

@@ -30,6 +30,8 @@ data class Item(
     var authorId: String? = null,
 
     @SerializedName("tags")
-    var tags: String? = null
+    var tags: String? = null,
+
+    var localImagePath: String = ""
 
 )
