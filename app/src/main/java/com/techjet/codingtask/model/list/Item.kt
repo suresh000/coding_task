@@ -9,7 +9,7 @@ data class Item(
     var title: String? = null,
 
     @SerializedName("link")
-    var link: String? = null,
+    var link: String = "",
 
     @SerializedName("media")
     var media: Media? = null,
@@ -21,7 +21,7 @@ data class Item(
     var description: String? = null,
 
     @SerializedName("published")
-    var published: String? = null,
+    var published: String = "",
 
     @SerializedName("author")
     var author: String? = null,
