@@ -60,6 +60,7 @@ class ListRepository(private val mContext: Context) {
                             title = item.title ?: ""
                             image = item.media?.m ?: ""
                             link = item.link
+                            description = item.description ?: ""
                         })
                     }
 
@@ -84,10 +85,11 @@ class ListRepository(private val mContext: Context) {
         val viewModels = ArrayList<ViewModelItem>()
         for (item in list) {
             viewModels.add(ListItemViewModel(mContext, Item().apply {
-                title = item.title ?: ""
-                media?.m = item.link ?: ""
-                link = item.link ?: ""
-                localImagePath = item.localImagePath ?: ""
+                title = item.title
+                media?.m = item.link
+                link = item.link
+                localImagePath = item.localImagePath
+                description = item.description
             }))
         }
 

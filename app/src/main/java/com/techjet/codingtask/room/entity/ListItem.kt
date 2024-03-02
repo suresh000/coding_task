@@ -26,4 +26,7 @@ class ListItem {
 
     @ColumnInfo(name = "localImagePath")
     var localImagePath: String = ""
+
+    @ColumnInfo(name = "description")
+    var description: String = ""
 }

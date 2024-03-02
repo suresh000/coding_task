@@ -5,14 +5,10 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.text.TextUtils
 import android.view.View
-import androidx.core.content.FileProvider
 import androidx.databinding.ObservableField
 import com.techjet.codingtask.AppNavigator
 import com.techjet.codingtask.base.adapter.ViewModelItem
 import com.techjet.codingtask.model.list.Item
-import com.techjet.codingtask.utils.FileUtils
-import com.techjet.codingtask.utils.NetworkUtil
-import java.io.File
 
 
 class ListItemViewModel(private val mContext: Context, item: Item) : ViewModelItem {
@@ -27,7 +23,7 @@ class ListItemViewModel(private val mContext: Context, item: Item) : ViewModelIt
     val imageUri = ObservableField<Uri>()
 
     init {
-        if (!NetworkUtil.isConnected(mContext)) {
+        /*if (!NetworkUtil.isConnected(mContext)) {
             if (FileUtils.isExit(item.localImagePath)) {
                 val uri = FileProvider.getUriForFile(mContext, FileUtils.FILE_PROVIDER, File(item.localImagePath))
                 val file = File(item.localImagePath)
@@ -35,7 +31,7 @@ class ListItemViewModel(private val mContext: Context, item: Item) : ViewModelIt
                 //val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                 //imageBitmap.set(bitmap)
             }
-        }
+        }*/
     }
 
     fun itemClick(view: View) {
